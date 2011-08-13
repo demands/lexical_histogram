@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Lexical histogram</title>
+    <script src="jquery.js"></script>
+    <script src="underscore-min.js"></script>
+    <script src="raphael-min.js"></script>
+    <script src="lexer.js"></script>
+    <style>
+      textarea {
+        width: 90%;
+        height: 50px;
+        background: #111;
+        color: #eee;
+        padding: 30px;
+        font: 16px monospace;
+      }
+      .chart {
+        margin: 0;
+        padding: 0;
+        width: 95%;
+        font: 12px monospace;
+      }
+      .chart li {
+        background: #0f0;
+        list-style: none;
+        margin: 10px 0;
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>It's lexical histogram time!</h1>
+    <textarea>Put some words here!</textarea>
+    <input type="button" value="Analyze!" />
+    <label for="sort_by">Sort by:</label>
+    <select name="sort_by" id="sort_by">
+      <option value="frequency">Frequency</option>
+      <option value="alpha">Alphabetical</option>
+      <option value="appearance">Order of Appearance</option>
+    </select>
+    <script>
+      (function($, l, undefined) {
+        var chart = $('<ul>').addClass('chart').appendTo('body');
+        var sorted = undefined;
+
+        var display = function() {
+          var maximum = undefined,
+              percentage = undefined,
+              frequency = undefined,
+              label = undefined;
+
+          chart.empty();
+          if(sorted !== undefined) {
+            maximum = l.maximum();
+
+            for(var i = 0; i < sorted.length; i++) {
+              frequency = l.frequency(sorted[i]);
+              percentage = (frequency / maximum) * 100;
+              label = sorted[i] + ' (' + frequency + ' time' + (frequency === 1 ? '' : 's') + ')';
+              chart.append($('<li>').text(label).css('width', percentage + '%'));
+            }
+          }
+        };
+
+        var analyze = function() {
+          var text = $('textarea').val();
+
+          l.analyze(text);
+          sorted = l.sort($('#sort_by').val());
+          
+          display();
+          $('textarea').select();
+        };
+
+        var changeSort = function() {
+          sorted = l.sort($('#sort_by').val());
+          display();
+        };
+
+        $('textarea').select();
+        $('textarea').change(analyze);
+        $('input').click(analyze);
+        $('#sort_by').change(changeSort);
+      })(jQuery, lexer)
+    </script>
+  </body>
+</html>
+
